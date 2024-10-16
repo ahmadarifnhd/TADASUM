@@ -5,7 +5,7 @@
 body{
     width: 99%;
     height: 97%;
-    background-image: url('/TADASUM/image/background.png');
+    background-image: url('/image/background.png');
     background-size:cover;
 }
 .top{
@@ -65,7 +65,7 @@ a:hover{
 .right{
     width: 440px;
     height: 440px;
-    background-image: url('/TADASUM/image/Menu1.png');
+    background-image: url('/image/Menu1.png');
     background-size:cover;
     border-radius: 400px;
     display: flex;
@@ -164,10 +164,10 @@ a:hover{
 }
 
 #food1{
-    background-image: url('/TADASUM/image/Menu1.png');
+    background-image: url('/image/Menu1.png');
 }
 #food2{
-    background-image: url('/TADASUM/image/Menu2.png');
+    background-image: url('/image/Menu2.png');
 }
 
 .menu{
