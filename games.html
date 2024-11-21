@@ -30,7 +30,6 @@
             display: flex;
             justify-content: center;
             position: relative;
-            animation: spin-initial 8s linear infinite;
         }
 
         .center-circle {
@@ -44,6 +43,7 @@
         }
 
         .triangle {
+            display: none; /* Default: hide the triangle */
             width: 0;
             height: 0;
             border-top: 20px solid transparent;
@@ -54,8 +54,6 @@
             right: -355%;
             transform: translateY(-50%);
         }
-
-
 
         textarea {
             background-color: rgba(20, 20, 20, 0.2);
@@ -69,13 +67,7 @@
             justify-content: center;
             margin-top: 40px;
         }
-
-        @keyframes spin-initial {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
-
 </head>
 
 <body>
@@ -84,18 +76,17 @@
         <p id="winner">NONE</p>
     </div>
     <div class="wheel">
-        <canvas class="" id="canvas" width="600" height="600"></canvas>
+        <canvas id="canvas" width="600" height="600"></canvas>
         <div class="center-circle" onclick="spin()">
-            <div class="triangle"></div>
+            <div class="triangle" id="triangle"></div> <!-- Triangle element -->
         </div>
     </div>
     <div class="inputArea" style="display: none;" onchange="createWheel()">
         <textarea rows="20" cols="30">Nice Try
-    Discount 10%
-    Discount 20%
-    Discount 30%
-    Free 1
-    Free 2</textarea>
+    Cut Rp.1000
+    Cut Rp.2000
+    Cut Rp.3000
+    Free 1 Box S</textarea>
     </div>
 
     <script>
@@ -103,7 +94,7 @@
             r = Math.floor(Math.random() * 255);
             g = Math.floor(Math.random() * 255);
             b = Math.floor(Math.random() * 255);
-            return { r, g, b }
+            return { r, g, b };
         }
 
         function toRad(deg) {
@@ -114,149 +105,109 @@
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        function easeOutSine(x) {
-            return Math.sin((x * Math.PI) / 2);
-        }
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const width = canvas.width;
+        const height = canvas.height;
 
-        // get percent between 2 number
-        function getPercent(input, min, max) {
-            return (((input - min) * 100) / (max - min)) / 100;
-        }
-    </script>
-
-    <script>
-        const canvas = document.getElementById("canvas")
-        const ctx = canvas.getContext("2d")
-        const width = document.getElementById("canvas").width
-        const height = document.getElementById("canvas").height
-
-        const centerX = width / 2
-        const centerY = height / 2
-        const radius = width / 2
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = width / 2;
 
         let items = document.getElementsByTagName("textarea")[0].value.split("\n");
-
-        let currentDeg = 0
-        let step = 360 / items.length
-        let colors = []
-        let itemDegs = {}
+        let step = 360 / items.length;
+        let colors = [];
+        let currentDeg = 0;
+        let spinning = true; // To track if the wheel is spinning before spin button
 
         for (let i = 0; i < items.length + 1; i++) {
-            colors.push(randomColor())
+            colors.push(randomColor());
         }
-
-        function createWheel() {
-            items = document.getElementsByTagName("textarea")[0].value.split("\n");
-            step = 360 / items.length
-            colors = []
-            for (let i = 0; i < items.length + 1; i++) {
-                colors.push(randomColor())
-            }
-            draw()
-        }
-
-        draw()
 
         function draw() {
+            ctx.clearRect(0, 0, width, height); // Clear the canvas
             ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, toRad(0), toRad(360))
-            ctx.fillStyle = `rgb(${33},${33},${33})`
+            ctx.arc(centerX, centerY, radius, toRad(0), toRad(360));
+            ctx.fillStyle = `rgb(${33},${33},${33})`;
             ctx.lineTo(centerX, centerY);
-            ctx.fill()
+            ctx.fill();
 
             let startDeg = currentDeg;
             for (let i = 0; i < items.length; i++, startDeg += step) {
-                let endDeg = startDeg + step
+                let endDeg = startDeg + step;
 
-                color = colors[i]
-                let colorStyle = `rgb(${color.r},${color.g},${color.b})`
-
-                ctx.beginPath();
-                rad = toRad(360 / step);
-                ctx.arc(centerX, centerY, radius - 2, toRad(startDeg), toRad(endDeg))
-                let colorStyle2 = `rgb(${color.r - 30},${color.g - 30},${color.b - 30})`
-                ctx.fillStyle = colorStyle2
-                ctx.lineTo(centerX, centerY);
-                ctx.fill()
+                const color = colors[i];
+                const colorStyle = `rgb(${color.r},${color.g},${color.b})`;
 
                 ctx.beginPath();
-                rad = toRad(360 / step);
-                ctx.arc(centerX, centerY, radius - 30, toRad(startDeg), toRad(endDeg))
-                ctx.fillStyle = colorStyle
+                ctx.arc(centerX, centerY, radius - 2, toRad(startDeg), toRad(endDeg));
+                const colorStyle2 = `rgb(${color.r - 30},${color.g - 30},${color.b - 30})`;
+                ctx.fillStyle = colorStyle2;
                 ctx.lineTo(centerX, centerY);
-                ctx.fill()
+                ctx.fill();
 
-                // draw text
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius - 30, toRad(startDeg), toRad(endDeg));
+                ctx.fillStyle = colorStyle;
+                ctx.lineTo(centerX, centerY);
+                ctx.fill();
+
+                // Draw text
                 ctx.save();
                 ctx.translate(centerX, centerY);
                 ctx.rotate(toRad((startDeg + endDeg) / 2));
                 ctx.textAlign = "center";
-                if (color.r > 150 || color.g > 150 || color.b > 150) {
-                    ctx.fillStyle = "#000";
-                }
-                else {
-                    ctx.fillStyle = "#fff";
-                }
+                ctx.fillStyle = color.r > 150 || color.g > 150 || color.b > 150 ? "#000" : "#fff";
                 ctx.font = 'bold 28px serif';
                 ctx.fillText(items[i], 130, 10);
                 ctx.restore();
-
-                itemDegs[items[i]] =
-                {
-                    "startDeg": startDeg,
-                    "endDeg": endDeg
-                }
-
-                // check winner
-                if (startDeg % 360 < 360 && startDeg % 360 > 250 && endDeg % 360 > 0 && endDeg % 360 < 90) {
-                    document.getElementById("winner").innerHTML = items[i]
-                }
             }
         }
 
-        let speed = 0
-        let maxRotation = randomRange(360 * 3, 360 * 6)
-        let pause = false
-        function animate() {
-            if (pause) {
-                return
+        function animateInitial() {
+            if (spinning) {
+                currentDeg += 2; // Spin speed for initial animation
+                draw();
+                requestAnimationFrame(animateInitial);
             }
-            speed = easeOutSine(getPercent(currentDeg, maxRotation, 0)) * 20
-            if (speed < 0.01) {
-                speed = 0
-                pause = true
-            }
-            currentDeg += speed
-            draw()
-            window.requestAnimationFrame(animate);
         }
+
+        // Initial animation starts when the page loads
+        animateInitial();
 
         function spin() {
-            if (speed != 0) {
-                return
+            if (!spinning) {
+                return; // Prevent multiple spins at the same time
             }
 
-            // Matikan animasi putaran awal
-            document.querySelector('.wheel').style.animation = 'none';
+            // Stop initial spinning
+            spinning = false;
 
-            // Reset kondisi roda dan kecepatan
-            maxRotation = 0;
-            currentDeg = 0
-            createWheel()
-            draw();
+            // Show the triangle
+            document.getElementById("triangle").style.display = "block";
 
-            // Pilih item secara acak
-            const randomIndex = Math.floor(Math.random() * items.length);
-            const selectedItem = items[randomIndex];
+            // Start the spin animation
+            let maxRotation = randomRange(360 * 5, 360 * 8);
+            let speed = 20;
 
-            // Hitung putaran maksimum berdasarkan posisi item acak
-            maxRotation = (360 * 6) - itemDegs[selectedItem].endDeg + 10;
+            function animateSpin() {
+                if (speed > 0) {
+                    currentDeg += speed;
+                    draw();
+                    speed *= 0.98; // Gradual slowing down
+                    if (speed < 0.5) {
+                        speed = 0; // Stop spinning
+                        const finalPosition = (360 - (currentDeg % 360)) % 360; // Get final position
+                        const selectedItemIndex = Math.floor(finalPosition / step); // Determine which item the wheel stopped on
+                        const selectedItem = items[selectedItemIndex];
+                        document.getElementById("winner").innerHTML = selectedItem; // Update "YOU GET" text
+                    }
+                    requestAnimationFrame(animateSpin);
+                }
+            }
 
-            // Atur roda untuk mulai berputar
-            pause = false;
-            window.requestAnimationFrame(animate);
+            animateSpin();
         }
     </script>
 </body>
-
 </html>
