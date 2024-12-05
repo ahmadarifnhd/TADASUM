@@ -175,39 +175,58 @@
         // Initial animation starts when the page loads
         animateInitial();
 
-        function spin() {
-            if (!spinning) {
-                return; // Prevent multiple spins at the same time
+        // Array berisi item dengan frekuensi lebih tinggi untuk "Nice Try"
+let items = [
+    "Nice Try", "Nice Try", "Nice Try", "Nice Try", "Nice Try", // Frekuensi lebih tinggi
+    "Cut Rp.1000",
+    "Cut Rp.2000",
+    "Cut Rp.3000",
+    "Free 1 Box S" // Frekuensi lebih rendah untuk hadiah besar
+];
+
+let step = 360 / items.length;
+let colors = [];
+let currentDeg = 0;
+let spinning = true; // Untuk melacak apakah roda sedang berputar
+
+for (let i = 0; i < items.length; i++) {
+    colors.push(randomColor());
+}
+
+function spin() {
+    if (!spinning) {
+        return; // Cegah spin ganda
+    }
+
+    // Hentikan animasi awal
+    spinning = false;
+
+    // Tampilkan segitiga penunjuk
+    document.getElementById("triangle").style.display = "block";
+
+    // Mulai animasi spin
+    let maxRotation = randomRange(360 * 5, 360 * 8);
+    let speed = 20;
+
+    function animateSpin() {
+        if (speed > 0) {
+            currentDeg += speed;
+            draw();
+            speed *= 0.98; // Pelan-pelan melambat
+            if (speed < 0.5) {
+                speed = 0; // Hentikan putaran
+                const finalPosition = (360 - (currentDeg % 360)) % 360; // Posisi akhir
+                const selectedItemIndex = Math.floor(finalPosition / step); // Tentukan indeks item
+                const selectedItem = items[selectedItemIndex]; // Item yang dipilih
+                document.getElementById("winner").innerHTML = selectedItem; // Tampilkan hasil
             }
-
-            // Stop initial spinning
-            spinning = false;
-
-            // Show the triangle
-            document.getElementById("triangle").style.display = "block";
-
-            // Start the spin animation
-            let maxRotation = randomRange(360 * 5, 360 * 8);
-            let speed = 20;
-
-            function animateSpin() {
-                if (speed > 0) {
-                    currentDeg += speed;
-                    draw();
-                    speed *= 0.98; // Gradual slowing down
-                    if (speed < 0.5) {
-                        speed = 0; // Stop spinning
-                        const finalPosition = (360 - (currentDeg % 360)) % 360; // Get final position
-                        const selectedItemIndex = Math.floor(finalPosition / step); // Determine which item the wheel stopped on
-                        const selectedItem = items[selectedItemIndex];
-                        document.getElementById("winner").innerHTML = selectedItem; // Update "YOU GET" text
-                    }
-                    requestAnimationFrame(animateSpin);
-                }
-            }
-
-            animateSpin();
+            requestAnimationFrame(animateSpin);
         }
+    }
+
+    animateSpin();
+}
+
     </script>
 </body>
 </html>
