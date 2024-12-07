@@ -39,10 +39,10 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
+            cursor: pointer;
         }
 
         .triangle {
-            display: none;
             width: 0;
             height: 0;
             border-top: 20px solid transparent;
@@ -71,23 +71,14 @@
 
 <body>
     <div class="header">
-        <h1>KAMU MENDAPATAKAN</h1>
+        <h1>KAMU MENDAPATKAN</h1>
         <p id="winner">NONE</p>
     </div>
     <div class="wheel">
         <canvas id="canvas" width="600" height="600"></canvas>
         <div class="center-circle" onclick="spin()">
-            <div class="triangle" id="triangle"></div>
+            <div class="triangle"></div>
         </div>
-    </div>
-    <div class="inputArea" style="display: none;" onchange="createWheel()">
-        <textarea rows="20" cols="30">
-            Nice Try
-            <br>Potongan<br>Rp.2000
-            <br>Free 1<br>Box S
-            <br>Potongan<br>Rp.3000
-            <br>Potongan<br>Rp.1000</textarea>
-            
     </div>
 
     <script>
@@ -102,10 +93,6 @@
             return deg * (Math.PI / 180.0);
         }
 
-        function randomRange(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
-
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
         const width = canvas.width;
@@ -115,8 +102,16 @@
         const centerY = height / 2;
         const radius = width / 2;
 
-        let items = document.getElementsByTagName("textarea")[0].value.split("\n");
-        let step = 360 / items.length;
+        const items = [
+        "Gratis<br>1 Box S",
+        "Coba Lagi",
+        "Potongan<br>Rp.2000",
+        "Potongan<br>Rp.1000",
+        "Potongan<br>Rp.3000"
+        ];
+
+
+        const step = 360 / items.length;
         let colors = [];
         let currentDeg = 0;
         let spinning = true;
@@ -157,7 +152,7 @@
         ctx.font = 'bold 28px serif';
 
         let textLines = items[i].split("<br>");
-        let totalHeight = textLines.length * 25; 
+        let totalHeight = textLines.length * 25;
         let startY = -totalHeight / 2; 
 
         textLines.forEach((line, index) => {
@@ -168,45 +163,43 @@
     }
 }
 
-        function animateInitial() {
-            if (spinning) {
-                currentDeg += 2;
-                draw();
-                requestAnimationFrame(animateInitial);
-            }
-        }
-
-        animateInitial();
-
-        function spin() {
-    if (!spinning) {
-        return;
-    }
+function spin() {
+    if (!spinning) return;
 
     spinning = false;
-    document.getElementById("triangle").style.display = "block";
 
-    let maxRotation = randomRange(360 * 10, 360 * 55);
-    let speed = 90; 
+    let speed = 85.1; 
+    const targetIndex = items.indexOf("Coba Lagi");
+    const targetDeg = (360 - targetIndex * step) % 360;
+    const totalRotation = 360 * 5 + targetDeg;
 
-    function animateSpin() {
-        if (speed > 0) {
+    function animate() {
+        if (speed > 0.2) {
             currentDeg += speed;
-            draw();
             speed *= 0.98;
-            if (speed < 0.5) {
-                speed = 0;
-                const finalPosition = (360 - (currentDeg % 360)) % 360;
-                const selectedItemIndex = Math.floor(finalPosition / step);
-                const selectedItem = items[selectedItemIndex];
-                document.getElementById("winner").innerHTML = selectedItem;
+        } else {
+            const overshoot = currentDeg % 360 - targetDeg;
+            currentDeg -= overshoot;
+
+            const winnerText = "Coba Lagi";
+            const winnerElement = document.getElementById("winner");
+            winnerElement.textContent = winnerText;
+            if (winnerText === "Coba Lagi") {
+                winnerElement.style.color = "red";
+            } else {
+                winnerElement.style.color = "black";
             }
-            requestAnimationFrame(animateSpin);
+
+            return;
         }
+
+        draw();
+        requestAnimationFrame(animate);
     }
 
-    animateSpin();
+    animate();
 }
+        draw();
     </script>
 </body>
 </html>
