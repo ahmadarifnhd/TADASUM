@@ -3,7 +3,6 @@
 <head>
     <title>TADASUM</title>
     <link rel="icon" href="image/Logo.png" type="image/png">
-
     <style>
         body {
             background-color: #000000;
@@ -35,7 +34,7 @@
         .center-circle {
             width: 80px;
             height: 80px;
-            border-radius: 60px;
+            border-radius: 50%;
             background-color: #fff;
             position: absolute;
             top: 50%;
@@ -43,7 +42,7 @@
         }
 
         .triangle {
-            display: none; /* Default: hide the triangle */
+            display: none;
             width: 0;
             height: 0;
             border-top: 20px solid transparent;
@@ -72,28 +71,30 @@
 
 <body>
     <div class="header">
-        <h1>YOU GET</h1>
+        <h1>KAMU MENDAPATAKAN</h1>
         <p id="winner">NONE</p>
     </div>
     <div class="wheel">
         <canvas id="canvas" width="600" height="600"></canvas>
         <div class="center-circle" onclick="spin()">
-            <div class="triangle" id="triangle"></div> <!-- Triangle element -->
+            <div class="triangle" id="triangle"></div>
         </div>
     </div>
     <div class="inputArea" style="display: none;" onchange="createWheel()">
-        <textarea rows="20" cols="30">Nice Try
-    Cut Rp.1000
-    Cut Rp.2000
-    Cut Rp.3000
-    Free 1 Box S</textarea>
+        <textarea rows="20" cols="30">
+            Nice Try
+            <br>Potongan<br>Rp.2000
+            <br>Free 1<br>Box S
+            <br>Potongan<br>Rp.3000
+            <br>Potongan<br>Rp.1000</textarea>
+            
     </div>
 
     <script>
         function randomColor() {
-            r = Math.floor(Math.random() * 255);
-            g = Math.floor(Math.random() * 255);
-            b = Math.floor(Math.random() * 255);
+            const r = Math.floor(Math.random() * 255);
+            const g = Math.floor(Math.random() * 255);
+            const b = Math.floor(Math.random() * 255);
             return { r, g, b };
         }
 
@@ -118,96 +119,94 @@
         let step = 360 / items.length;
         let colors = [];
         let currentDeg = 0;
-        let spinning = true; // To track if the wheel is spinning before spin button
+        let spinning = true;
 
-        for (let i = 0; i < items.length + 1; i++) {
+        for (let i = 0; i < items.length; i++) {
             colors.push(randomColor());
         }
 
         function draw() {
-            ctx.clearRect(0, 0, width, height); // Clear the canvas
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, toRad(0), toRad(360));
-            ctx.fillStyle = rgb(${33},${33},${33});
-            ctx.lineTo(centerX, centerY);
-            ctx.fill();
+    ctx.clearRect(0, 0, width, height);
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, toRad(0), toRad(360));
+    ctx.fillStyle = `rgb(33, 33, 33)`;
+    ctx.fill();
 
-            let startDeg = currentDeg;
-            for (let i = 0; i < items.length; i++, startDeg += step) {
-                let endDeg = startDeg + step;
+    let startDeg = currentDeg;
+    for (let i = 0; i < items.length; i++, startDeg += step) {
+        let endDeg = startDeg + step;
+        const color = colors[i];
 
-                const color = colors[i];
-                const colorStyle = rgb(${color.r},${color.g},${color.b});
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius - 2, toRad(startDeg), toRad(endDeg));
+        ctx.fillStyle = `rgb(${color.r - 30}, ${color.g - 30}, ${color.b - 30})`;
+        ctx.lineTo(centerX, centerY);
+        ctx.fill();
 
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, radius - 2, toRad(startDeg), toRad(endDeg));
-                const colorStyle2 = rgb(${color.r - 30},${color.g - 30},${color.b - 30});
-                ctx.fillStyle = colorStyle2;
-                ctx.lineTo(centerX, centerY);
-                ctx.fill();
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius - 30, toRad(startDeg), toRad(endDeg));
+        ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+        ctx.lineTo(centerX, centerY);
+        ctx.fill();
 
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, radius - 30, toRad(startDeg), toRad(endDeg));
-                ctx.fillStyle = colorStyle;
-                ctx.lineTo(centerX, centerY);
-                ctx.fill();
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(toRad((startDeg + endDeg) / 2));
+        ctx.textAlign = "center";
+        ctx.fillStyle = color.r > 150 || color.g > 150 || color.b > 150 ? "#000" : "#fff";
+        ctx.font = 'bold 28px serif';
 
-                // Draw text
-                ctx.save();
-                ctx.translate(centerX, centerY);
-                ctx.rotate(toRad((startDeg + endDeg) / 2));
-                ctx.textAlign = "center";
-                ctx.fillStyle = color.r > 150 || color.g > 150 || color.b > 150 ? "#000" : "#fff";
-                ctx.font = 'bold 28px serif';
-                ctx.fillText(items[i], 130, 10);
-                ctx.restore();
-            }
-        }
+        let textLines = items[i].split("<br>");
+        let totalHeight = textLines.length * 25; 
+        let startY = -totalHeight / 2; 
+
+        textLines.forEach((line, index) => {
+            ctx.fillText(line, 130, startY + index * 25);
+        });
+
+        ctx.restore();
+    }
+}
 
         function animateInitial() {
             if (spinning) {
-                currentDeg += 2; // Spin speed for initial animation
+                currentDeg += 2;
                 draw();
                 requestAnimationFrame(animateInitial);
             }
         }
 
-        // Initial animation starts when the page loads
         animateInitial();
 
         function spin() {
-            if (!spinning) {
-                return; // Prevent multiple spins at the same time
+    if (!spinning) {
+        return;
+    }
+
+    spinning = false;
+    document.getElementById("triangle").style.display = "block";
+
+    let maxRotation = randomRange(360 * 10, 360 * 55);
+    let speed = 90; 
+
+    function animateSpin() {
+        if (speed > 0) {
+            currentDeg += speed;
+            draw();
+            speed *= 0.98;
+            if (speed < 0.5) {
+                speed = 0;
+                const finalPosition = (360 - (currentDeg % 360)) % 360;
+                const selectedItemIndex = Math.floor(finalPosition / step);
+                const selectedItem = items[selectedItemIndex];
+                document.getElementById("winner").innerHTML = selectedItem;
             }
-
-            // Stop initial spinning
-            spinning = false;
-
-            // Show the triangle
-            document.getElementById("triangle").style.display = "block";
-
-            // Start the spin animation
-            let maxRotation = randomRange(360 * 5, 360 * 8);
-            let speed = 20;
-
-            function animateSpin() {
-                if (speed > 0) {
-                    currentDeg += speed;
-                    draw();
-                    speed *= 0.98; // Gradual slowing down
-                    if (speed < 0.5) {
-                        speed = 0; // Stop spinning
-                        const finalPosition = (360 - (currentDeg % 360)) % 360; // Get final position
-                        const selectedItemIndex = Math.floor(finalPosition / step); // Determine which item the wheel stopped on
-                        const selectedItem = items[selectedItemIndex];
-                        document.getElementById("winner").innerHTML = selectedItem; // Update "YOU GET" text
-                    }
-                    requestAnimationFrame(animateSpin);
-                }
-            }
-
-            animateSpin();
+            requestAnimationFrame(animateSpin);
         }
+    }
+
+    animateSpin();
+}
     </script>
 </body>
 </html>
